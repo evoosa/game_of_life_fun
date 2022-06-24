@@ -3,13 +3,18 @@ from time import sleep
 
 import pygame
 
-from board import Board
+from .board import Board
 
 BLACK = (0, 0, 0)
 WHITE = (200, 200, 200)
+CYBER_GREEN = (0, 200, 0)
 GREY = (150, 150, 150)
+LIVING_CELL_COLOR = CYBER_GREEN
+DEAD_CELL_COLOR = BLACK
+
 MAX_WINDOW_HEIGHT = 800
 MAX_WINDOW_WIDTH = 800
+FRAME_IDLE_TIME_SECONDS = 0.01
 
 
 class Game:
@@ -22,15 +27,17 @@ class Game:
         self.clock = pygame.time.Clock()
         self.display = pygame.display.set_mode((self.window_width, self.window_height))
 
-    def main(self):
+    def start_game(self):
+        """ start the game of life """
         pygame.init()
         self.clock = pygame.time.Clock()
-        self.display.fill(GREY)
+        self.display.fill(DEAD_CELL_COLOR)
 
         while True:
-            self.board.calculate_next_state()
-            self.board.update_current_state()
+            self.board.calculate_board_next_state()
+            self.board.update_board_current_state()
             self.draw_grid()
+            sleep(FRAME_IDLE_TIME_SECONDS)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -39,15 +46,15 @@ class Game:
             pygame.display.update()
 
     def draw_grid(self):
-        sleep(0.1)
+        """ draw the grid on the screen """
         x_counter = 0
         for x in range(0, self.window_width, self.block_side_len):
             y_counter = 0
-            if x_counter == (self.board.width): break
+            if x_counter == self.board.width: break
             for y in range(0, self.window_height, self.block_side_len):
-                if y_counter == (self.board.height): break
-                current_cell_state = self.board.matrix[y_counter][x_counter].current_state
-                current_cell_color = BLACK if current_cell_state == 1 else WHITE
+                if y_counter == self.board.height: break
+                current_cell_state = self.board.cells_matrix[y_counter][x_counter].current_state
+                current_cell_color = LIVING_CELL_COLOR if current_cell_state == 1 else DEAD_CELL_COLOR
                 rect = pygame.Rect(x - self.block_border_width,
                                    y - self.block_border_width,
                                    self.block_side_len - self.block_border_width,
@@ -55,26 +62,3 @@ class Game:
                 pygame.draw.rect(self.display, current_cell_color, rect)
                 y_counter += 1
             x_counter += 1
-
-
-if __name__ == '__main__':
-    dimensions = (100, 100)
-    initial_living_cells_coordinates = [
-        (2, 5),
-        (3, 5),
-        (4, 5),
-        (3, 6),
-        (4, 6),
-        (2, 7),
-        (3, 8),
-        (4, 7),
-        (3, 7),
-        (4, 7)
-    ]  # FIXME
-    # static_cells_coordinates = [
-    #
-    # ]
-    board = Board(dimensions, initial_living_cells_coordinates)
-    g = Game(board)
-    g.main()
-    # main()
